@@ -6,37 +6,47 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { awards } from '@/data/mock-data'
 import { SkeletonLoader } from '@/components/skeleton-loader'
 import { SlideOver } from '@/components/slide-over'
 import { AwardDetail } from '@/components/details/award-detail'
 import { Calendar, Trophy } from 'lucide-react'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { fetchAwards } from '@/store/actions'
 
 const ease = [0.22, 1, 0.36, 1]
 
 export default function AwardsPage() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedAward, setSelectedAward] = useState<typeof awards[0] | null>(null)
-  const [isDetailLoading, setIsDetailLoading] = useState(false)
+  const dispatch = useAppDispatch()
+  const { awards, listLoading, error, pagination } = useAppSelector(state => state.award)
+  const [selectedAwardId, setSelectedAwardId] = useState<number | null>(null)
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1200)
-    return () => clearTimeout(timer)
-  }, [])
+    dispatch(fetchAwards() as any)
+  }, [dispatch])
+
+  const handlePrevPage = () => {
+    if (pagination.previous) {
+      dispatch(fetchAwards(pagination.previous) as any)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const handleNextPage = () => {
+    if (pagination.next) {
+      dispatch(fetchAwards(pagination.next) as any)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 
   const handleOpenDetail = (award: typeof awards[0]) => {
-    setIsDetailLoading(true)
-    setTimeout(() => {
-      setSelectedAward(award)
-      setIsDetailLoading(false)
-    }, 600)
+    setSelectedAwardId(award.id)
   }
 
   const handleCloseDetail = () => {
-    setSelectedAward(null)
+    setSelectedAwardId(null)
   }
 
-  if (isLoading) {
+  if (listLoading) {
     return (
       <div className="min-h-screen dot-grid-bg">
         <Navbar />
@@ -48,6 +58,25 @@ export default function AwardsPage() {
                 <SkeletonLoader.Certificate key={i} />
               ))}
             </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen dot-grid-bg">
+        <Navbar />
+        <main className="w-full px-6 py-20 lg:px-12">
+          <div className="max-w-6xl mx-auto text-center">
+            <p className="text-foreground/60 font-mono mb-4">{error}</p>
+            <button
+              onClick={() => dispatch(fetchAwards() as any)}
+              className="px-4 py-2 border border-foreground hover:bg-foreground/10 transition-colors font-mono text-sm"
+            >
+              Retry
+            </button>
           </div>
         </main>
       </div>
@@ -90,7 +119,7 @@ export default function AwardsPage() {
               {"// SECTION: AWARDS_GALLERY"}
             </span>
             <div className="flex-1 border-t border-border" />
-            <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono">{awards.length}</span>
+            <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono">{pagination.count || awards.length}</span>
           </motion.div>
 
           {/* Awards Grid */}
@@ -155,6 +184,27 @@ export default function AwardsPage() {
             })}
           </div>
 
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between gap-4 mt-12 pt-8 border-t border-border">
+            <button
+              onClick={handlePrevPage}
+              disabled={!pagination.previous}
+              className="px-4 py-2 border border-foreground font-mono text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed hover:bg-foreground/10 transition-colors"
+            >
+              ← Previous
+            </button>
+            <span className="text-xs font-mono text-muted-foreground">
+              {awards.length ? `Items: ${awards.length}` : 'No items'}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={!pagination.next}
+              className="px-4 py-2 border border-foreground font-mono text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed hover:bg-foreground/10 transition-colors"
+            >
+              Next →
+            </button>
+          </div>
+
           {/* Stats Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -170,7 +220,7 @@ export default function AwardsPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-6 border-2 border-foreground">
                 <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono mb-2">Total Awards</p>
-                <p className="text-4xl font-mono font-bold text-foreground">{awards.length}</p>
+                <p className="text-4xl font-mono font-bold text-foreground">{pagination.count || awards.length}</p>
               </div>
               <div className="p-6 border-2 border-foreground">
                 <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono mb-2">Hackathons</p>
@@ -235,12 +285,11 @@ export default function AwardsPage() {
 
       {/* Detail Slide-Over */}
       <SlideOver
-        isOpen={selectedAward !== null}
+        isOpen={selectedAwardId !== null}
         onClose={handleCloseDetail}
-        title={selectedAward?.title || "Award Details"}
-        isLoading={isDetailLoading}
+        title="Award Details"
       >
-        {selectedAward && <AwardDetail award={selectedAward} />}
+        {selectedAwardId && <AwardDetail id={selectedAwardId} />}
       </SlideOver>
     </div>
   )

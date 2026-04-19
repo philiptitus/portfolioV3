@@ -2,29 +2,27 @@
 
 import { motion } from 'framer-motion'
 import { Calendar, MapPin, Building2, ExternalLink, MessageCircle } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useChat } from '@/contexts/chat-context'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { fetchJobDetail } from '@/store/actions'
 
 interface ExperienceDetailProps {
-  job: {
-    id: number
-    job_title?: string
-    company_name?: string
-    location?: string
-    description?: string
-    start_date?: string
-    end_date?: string | null
-    is_current?: boolean
-    url?: string
-  }
+  id: number
 }
 
-export function ExperienceDetail({ job }: ExperienceDetailProps) {
+export function ExperienceDetail({ id }: ExperienceDetailProps) {
   const { openChat } = useChat()
+  const dispatch = useAppDispatch()
+  const { jobDetail: job, detailLoading: loading, error } = useAppSelector(state => state.job)
   const [formattedDates, setFormattedDates] = useState({ start: '', end: '' })
 
   useEffect(() => {
-    if (job.start_date) {
+    dispatch(fetchJobDetail(id) as any)
+  }, [id, dispatch])
+
+  useEffect(() => {
+    if (job?.start_date) {
       const startDate = new Date(job.start_date)
       setFormattedDates((prev) => ({
         ...prev,
@@ -34,7 +32,7 @@ export function ExperienceDetail({ job }: ExperienceDetailProps) {
         }),
       }))
     }
-    if (job.end_date) {
+    if (job?.end_date) {
       const endDate = new Date(job.end_date)
       setFormattedDates((prev) => ({
         ...prev,
@@ -44,7 +42,42 @@ export function ExperienceDetail({ job }: ExperienceDetailProps) {
         }),
       }))
     }
-  }, [job.start_date, job.end_date])
+  }, [job?.start_date, job?.end_date])
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-24 bg-foreground/10 animate-pulse" />
+        <div className="h-4 bg-foreground/10 w-3/4 animate-pulse" />
+        <div className="space-y-2">
+          <div className="h-3 bg-foreground/10 w-full animate-pulse" />
+          <div className="h-3 bg-foreground/10 w-2/3 animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center space-y-3">
+        <p className="text-xs font-mono text-foreground/60">{error}</p>
+        <button
+          onClick={() => dispatch(fetchJobDetail(id) as any)}
+          className="px-3 py-2 border border-foreground text-xs font-mono uppercase hover:bg-foreground/10 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  if (!job) {
+    return (
+      <div className="text-center text-xs font-mono text-foreground/60">
+        No job data available
+      </div>
+    )
+  }
 
   return (
     <motion.div

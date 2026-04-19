@@ -7,59 +7,64 @@ import { Footer } from "@/components/footer"
 import { SkeletonPortfolioGrid, SkeletonHeader } from "@/components/skeleton-loader"
 import { SlideOver } from "@/components/slide-over"
 import { PortfolioDetail } from "@/components/details/portfolio-detail"
-import { portfolioProjects } from "@/data/mock-data"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { fetchPortfolios } from "@/store/actions"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
-const ITEMS_PER_PAGE = 6
 const ease = [0.22, 1, 0.36, 1] as const
 
 export default function PortfolioPage() {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isLoading, setIsLoading] = useState(true)
-  const [projects, setProjects] = useState(portfolioProjects)
-  const [selectedProject, setSelectedProject] = useState<typeof portfolioProjects[0] | null>(null)
-  const [isDetailLoading, setIsDetailLoading] = useState(false)
+  const dispatch = useAppDispatch()
+  const { portfolios, listLoading, error, pagination } = useAppSelector(state => state.portfolio)
+  
+  const [selectedProjectSlug, setSelectedProjectSlug] = useState<string | null>(null)
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setProjects(portfolioProjects)
-      setIsLoading(false)
-    }, 800)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const totalPages = Math.ceil(projects.length / ITEMS_PER_PAGE)
-  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE
-  const endIdx = startIdx + ITEMS_PER_PAGE
-  const currentProjects = projects.slice(startIdx, endIdx)
+    dispatch(fetchPortfolios() as any)
+  }, [dispatch])
 
   const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1)
+    if (pagination.previous) {
+      dispatch(fetchPortfolios(pagination.previous) as any)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1)
+    if (pagination.next) {
+      dispatch(fetchPortfolios(pagination.next) as any)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
-  const handleOpenDetail = (project: typeof portfolioProjects[0]) => {
-    setIsDetailLoading(true)
-    // Simulate API call to fetch full details
-    setTimeout(() => {
-      setSelectedProject(project)
-      setIsDetailLoading(false)
-    }, 600)
+  const handleOpenDetail = (project: typeof portfolios[0]) => {
+    setSelectedProjectSlug(project.slug)
   }
 
   const handleCloseDetail = () => {
-    setSelectedProject(null)
+    setSelectedProjectSlug(null)
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen dot-grid-bg flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2">Unable to Load Portfolios</h2>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <button
+              onClick={() => dispatch(fetchPortfolios() as any)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+            >
+              Try Again
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
   }
 
   return (
@@ -78,12 +83,12 @@ export default function PortfolioPage() {
           </span>
           <div className="flex-1 border-t border-border" />
           <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono">
-            {currentPage} / {totalPages}
+            Total: {pagination.count}
           </span>
         </motion.div>
 
         {/* Header */}
-        {isLoading ? (
+        {listLoading ? (
           <SkeletonHeader />
         ) : (
           <motion.div
@@ -103,7 +108,7 @@ export default function PortfolioPage() {
         )}
 
         {/* Projects Grid */}
-        {isLoading ? (
+        {listLoading ? (
           <SkeletonPortfolioGrid />
         ) : (
           <motion.div
@@ -112,7 +117,7 @@ export default function PortfolioPage() {
             transition={{ duration: 0.5, ease }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
           >
-            {currentProjects.map((project, idx) => (
+            {portfolios.map((project, idx) => (
               <motion.div
                 key={project.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -165,7 +170,7 @@ export default function PortfolioPage() {
         )}
 
         {/* Pagination */}
-        {!isLoading && totalPages > 1 && (
+        {!listLoading && (pagination.next || pagination.previous) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -174,35 +179,22 @@ export default function PortfolioPage() {
           >
             <button
               onClick={handlePrevPage}
-              disabled={currentPage === 1}
+              disabled={!pagination.previous}
               className="flex items-center gap-2 px-4 py-2 border-2 border-foreground text-xs font-mono tracking-widest uppercase disabled:opacity-50 hover:bg-foreground/10 transition-colors"
             >
               <ChevronLeft size={14} />
               Previous
             </button>
 
-            <div className="flex items-center gap-2">
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setCurrentPage(i + 1)
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }}
-                  className={`w-8 h-8 font-mono text-xs font-bold transition-colors ${
-                    currentPage === i + 1
-                      ? "bg-foreground text-background"
-                      : "border-2 border-foreground text-foreground hover:bg-foreground/10"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+            <div className="flex-1 text-center">
+              <span className="text-xs font-mono text-muted-foreground">
+                {portfolios.length} items shown of {pagination.count}
+              </span>
             </div>
 
             <button
               onClick={handleNextPage}
-              disabled={currentPage === totalPages}
+              disabled={!pagination.next}
               className="flex items-center gap-2 px-4 py-2 border-2 border-foreground text-xs font-mono tracking-widest uppercase disabled:opacity-50 hover:bg-foreground/10 transition-colors"
             >
               Next
@@ -215,12 +207,11 @@ export default function PortfolioPage() {
 
       {/* Detail Slide-Over */}
       <SlideOver
-        isOpen={selectedProject !== null}
+        isOpen={selectedProjectSlug !== null}
         onClose={handleCloseDetail}
-        title={selectedProject?.name || "Project Details"}
-        isLoading={isDetailLoading}
+        title="Project Details"
       >
-        {selectedProject && <PortfolioDetail project={selectedProject} />}
+        {selectedProjectSlug && <PortfolioDetail slug={selectedProjectSlug} />}
       </SlideOver>
     </div>
   )

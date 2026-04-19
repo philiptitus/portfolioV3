@@ -1,31 +1,68 @@
 "use client"
 
+import { useEffect } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { Calendar, User, MessageCircle } from "lucide-react"
 import { useChat } from "@/contexts/chat-context"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { fetchBlogDetail } from "@/store/actions"
 
 interface BlogDetailProps {
-  article: {
-    id: number
-    name: string
-    description?: string
-    body?: string
-    author?: string
-    timestamp?: string
-    category?: string
-    image_url?: string
-    png_url?: string | null
-  }
+  slug: string
 }
 
-export function BlogDetail({ article }: BlogDetailProps) {
+export function BlogDetail({ slug }: BlogDetailProps) {
   const { openChat } = useChat()
-  const formattedDate = new Date(article.timestamp).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
+  const dispatch = useAppDispatch()
+  const { blogDetail: article, detailLoading: loading, error } = useAppSelector(state => state.blog)
+
+  useEffect(() => {
+    dispatch(fetchBlogDetail(slug) as any)
+  }, [slug, dispatch])
+
+  const formattedDate = article?.timestamp
+    ? new Date(article.timestamp).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : ""
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-48 bg-foreground/10 animate-pulse" />
+        <div className="h-4 bg-foreground/10 w-3/4 animate-pulse" />
+        <div className="space-y-2">
+          <div className="h-3 bg-foreground/10 w-full animate-pulse" />
+          <div className="h-3 bg-foreground/10 w-full animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center space-y-3">
+        <p className="text-xs font-mono text-foreground/60">{error}</p>
+        <button
+          onClick={() => dispatch(fetchBlogDetail(slug) as any)}
+          className="px-3 py-2 border border-foreground text-xs font-mono uppercase hover:bg-foreground/10 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  if (!article) {
+    return (
+      <div className="text-center text-xs font-mono text-foreground/60">
+        No article data available
+      </div>
+    )
+  }
 
   return (
     <motion.div

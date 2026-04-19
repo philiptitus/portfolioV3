@@ -4,36 +4,67 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { certificates } from '@/data/mock-data'
-import { SkeletonLoader, SkeletonCard } from '@/components/skeleton-loader'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { fetchCertificates } from '@/store/actions'
+import { SkeletonCard } from '@/components/skeleton-loader'
 import { SlideOver } from '@/components/slide-over'
 import { CertificationDetail } from '@/components/details/certification-detail'
 import Link from 'next/link'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const ease = [0.22, 1, 0.36, 1] as const
 
 export default function CertificationsPage() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedCert, setSelectedCert] = useState<typeof certificates[0] | null>(null)
-  const [isDetailLoading, setIsDetailLoading] = useState(false)
+  const dispatch = useAppDispatch()
+  const { certificates, listLoading, error, pagination } = useAppSelector(state => state.certificate)
+  
+  const [selectedCertId, setSelectedCertId] = useState<number | null>(null)
 
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setIsLoading(false), 800)
-    return () => clearTimeout(timer)
-  }, [])
+    dispatch(fetchCertificates() as any)
+  }, [dispatch])
 
   const handleOpenDetail = (cert: typeof certificates[0]) => {
-    setIsDetailLoading(true)
-    setTimeout(() => {
-      setSelectedCert(cert)
-      setIsDetailLoading(false)
-    }, 600)
+    setSelectedCertId(cert.id)
   }
 
   const handleCloseDetail = () => {
-    setSelectedCert(null)
+    setSelectedCertId(null)
+  }
+
+  const handlePrevPage = () => {
+    if (pagination.previous) {
+      dispatch(fetchCertificates(pagination.previous) as any)
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }
+
+  const handleNextPage = () => {
+    if (pagination.next) {
+      dispatch(fetchCertificates(pagination.next) as any)
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen dot-grid-bg flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2">Unable to Load Certifications</h2>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <button
+              onClick={() => dispatch(fetchCertificates() as any)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+            >
+              Try Again
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
   }
 
   return (
@@ -65,10 +96,10 @@ export default function CertificationsPage() {
         </motion.div>
 
         {/* Certificates Grid */}
-        {isLoading ? (
+        {listLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonLoader.Certificate key={i} />
+              <SkeletonCard key={i} />
             ))}
           </div>
         ) : (
@@ -140,6 +171,40 @@ export default function CertificationsPage() {
           </motion.div>
         )}
 
+        {/* Pagination */}
+        {!listLoading && (pagination.next || pagination.previous) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease }}
+            className="flex items-center justify-center gap-4 mt-12 pt-8 border-t-2 border-foreground"
+          >
+            <button
+              onClick={handlePrevPage}
+              disabled={!pagination.previous}
+              className="flex items-center gap-2 px-4 py-2 border-2 border-foreground text-xs font-mono tracking-widest uppercase disabled:opacity-50 hover:bg-foreground/10 transition-colors"
+            >
+              <ChevronLeft size={14} />
+              Previous
+            </button>
+
+            <div className="flex-1 text-center">
+              <span className="text-xs font-mono text-muted-foreground">
+                {certificates.length} items shown of {pagination.count}
+              </span>
+            </div>
+
+            <button
+              onClick={handleNextPage}
+              disabled={!pagination.next}
+              className="flex items-center gap-2 px-4 py-2 border-2 border-foreground text-xs font-mono tracking-widest uppercase disabled:opacity-50 hover:bg-foreground/10 transition-colors"
+            >
+              Next
+              <ChevronRight size={14} />
+            </button>
+          </motion.div>
+        )}
+
         {/* Stats */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -173,12 +238,11 @@ export default function CertificationsPage() {
 
       {/* Detail Slide-Over */}
       <SlideOver
-        isOpen={selectedCert !== null}
+        isOpen={selectedCertId !== null}
         onClose={handleCloseDetail}
-        title={selectedCert?.name || "Certification Details"}
-        isLoading={isDetailLoading}
+        title="Certification Details"
       >
-        {selectedCert && <CertificationDetail cert={selectedCert} />}
+        {selectedCertId && <CertificationDetail id={selectedCertId} />}
       </SlideOver>
     </div>
   )

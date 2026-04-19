@@ -49,7 +49,7 @@ export function FeatureGrid({ onPortfolioClick }: FeatureGridProps) {
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 border-2 border-foreground gap-0">
           {/* Terminal - AI Chatbot */}
-          <div className="border-b-2 lg:border-b-0 lg:border-r-2 border-foreground min-h-[320px]">
+          <div className="border-b-2 lg:border-b-0 lg:border-r-2 border-foreground h-[480px]">
             <TerminalCard />
           </div>
 

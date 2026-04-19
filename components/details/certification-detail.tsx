@@ -1,31 +1,68 @@
 "use client"
 
+import { useEffect } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { Calendar, ExternalLink, Award, MessageCircle } from "lucide-react"
 import { useChat } from "@/contexts/chat-context"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { fetchCertificateDetail } from "@/store/actions"
 
 interface CertificationDetailProps {
-  cert: {
-    id: number
-    name: string
-    title?: string
-    description?: string
-    image_url?: string
-    url?: string
-    date?: string
-    is_active?: boolean
-    is_ongoing?: boolean
-  }
+  id: number
 }
 
-export function CertificationDetail({ cert }: CertificationDetailProps) {
+export function CertificationDetail({ id }: CertificationDetailProps) {
   const { openChat } = useChat()
-  const formattedDate = new Date(cert.date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
+  const dispatch = useAppDispatch()
+  const { certificateDetail: cert, detailLoading: loading, error } = useAppSelector(state => state.certificate)
+
+  useEffect(() => {
+    dispatch(fetchCertificateDetail(id) as any)
+  }, [id, dispatch])
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-48 bg-foreground/10 animate-pulse" />
+        <div className="h-4 bg-foreground/10 w-3/4 animate-pulse" />
+        <div className="space-y-2">
+          <div className="h-3 bg-foreground/10 w-full animate-pulse" />
+          <div className="h-3 bg-foreground/10 w-2/3 animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center space-y-3">
+        <p className="text-xs font-mono text-foreground/60">{error}</p>
+        <button
+          onClick={() => dispatch(fetchCertificateDetail(id) as any)}
+          className="px-3 py-2 border border-foreground text-xs font-mono uppercase hover:bg-foreground/10 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  if (!cert) {
+    return (
+      <div className="text-center text-xs font-mono text-foreground/60">
+        No certification data available
+      </div>
+    )
+  }
+
+  const formattedDate = cert.date
+    ? new Date(cert.date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : ""
 
   return (
     <motion.div

@@ -39,7 +39,7 @@ export function Navbar() {
           >
             <Cpu size={16} strokeWidth={1.5} />
             <span className="text-xs font-mono tracking-[0.15em] uppercase font-bold">
-              PHILIP.DEV
+              FILIPIO.COM
             </span>
           </motion.a>
 
@@ -96,18 +96,19 @@ export function Navbar() {
           >
             <ThemeToggle />
             <a
-              href="mailto:philip@example.com"
+              href="mailto:hi@filipio.com"
               className="hidden sm:block text-xs font-mono tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               Email
             </a>
-            <motion.button
+            <motion.a
+              href="/contact"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-foreground text-background px-4 py-2 text-xs font-mono tracking-widest uppercase"
+              className="bg-foreground text-background px-4 py-2 text-xs font-mono tracking-widest uppercase inline-block"
             >
               Hire Me
-            </motion.button>
+            </motion.a>
           </motion.div>
         </div>
       </nav>

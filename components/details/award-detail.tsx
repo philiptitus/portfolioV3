@@ -3,37 +3,66 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Calendar, Award, Building2, MessageCircle } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useChat } from '@/contexts/chat-context'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { fetchAwardDetail } from '@/store/actions'
 
 interface AwardDetailProps {
-  award: {
-    id: number
-    title?: string
-    description?: string
-    issued_by?: string
-    date?: string
-    image_url?: string
-    is_active?: boolean
-  }
+  id: number
 }
 
-export function AwardDetail({ award }: AwardDetailProps) {
+export function AwardDetail({ id }: AwardDetailProps) {
   const { openChat } = useChat()
-  const [formattedDate, setFormattedDate] = useState('')
+  const dispatch = useAppDispatch()
+  const { awardDetail: award, detailLoading: loading, error } = useAppSelector(state => state.award)
 
   useEffect(() => {
-    if (award.date) {
-      const date = new Date(award.date)
-      setFormattedDate(
-        date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-      )
-    }
-  }, [award.date])
+    dispatch(fetchAwardDetail(id) as any)
+  }, [id, dispatch])
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-48 bg-foreground/10 animate-pulse" />
+        <div className="h-4 bg-foreground/10 w-3/4 animate-pulse" />
+        <div className="space-y-2">
+          <div className="h-3 bg-foreground/10 w-full animate-pulse" />
+          <div className="h-3 bg-foreground/10 w-2/3 animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center space-y-3">
+        <p className="text-xs font-mono text-foreground/60">{error}</p>
+        <button
+          onClick={() => dispatch(fetchAwardDetail(id) as any)}
+          className="px-3 py-2 border border-foreground text-xs font-mono uppercase hover:bg-foreground/10 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  if (!award) {
+    return (
+      <div className="text-center text-xs font-mono text-foreground/60">
+        No award data available
+      </div>
+    )
+  }
+
+  const formattedDate = award.date
+    ? new Date(award.date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : ''
 
   return (
     <motion.div

@@ -7,59 +7,43 @@ import { Footer } from "@/components/footer"
 import { SkeletonBlogGrid, SkeletonHeader } from "@/components/skeleton-loader"
 import { SlideOver } from "@/components/slide-over"
 import { BlogDetail } from "@/components/details/blog-detail"
-import { blogs } from "@/data/mock-data"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { fetchBlogs } from "@/store/actions"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
-const ITEMS_PER_PAGE = 6
 const ease = [0.22, 1, 0.36, 1] as const
 
 export default function BlogPage() {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isLoading, setIsLoading] = useState(true)
-  const [blogPosts, setBlogPosts] = useState(blogs)
-  const [selectedArticle, setSelectedArticle] = useState<typeof blogs[0] | null>(null)
-  const [isDetailLoading, setIsDetailLoading] = useState(false)
+  const dispatch = useAppDispatch()
+  const { blogs, listLoading, error, pagination } = useAppSelector(state => state.blog)
+  
+  const [selectedArticleSlug, setSelectedArticleSlug] = useState<string | null>(null)
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setBlogPosts(blogs)
-      setIsLoading(false)
-    }, 800)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const totalPages = Math.ceil(blogPosts.length / ITEMS_PER_PAGE)
-  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE
-  const endIdx = startIdx + ITEMS_PER_PAGE
-  const currentPosts = blogPosts.slice(startIdx, endIdx)
+    dispatch(fetchBlogs() as any)
+  }, [dispatch])
 
   const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1)
+    if (pagination.previous) {
+      dispatch(fetchBlogs(pagination.previous) as any)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1)
+    if (pagination.next) {
+      dispatch(fetchBlogs(pagination.next) as any)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
   const handleOpenDetail = (article: typeof blogs[0]) => {
-    setIsDetailLoading(true)
-    // Simulate API call to fetch full article
-    setTimeout(() => {
-      setSelectedArticle(article)
-      setIsDetailLoading(false)
-    }, 600)
+    setSelectedArticleSlug(article.slug)
   }
 
   const handleCloseDetail = () => {
-    setSelectedArticle(null)
+    setSelectedArticleSlug(null)
   }
 
   const formatDate = (timestamp: string) => {
@@ -68,6 +52,27 @@ export default function BlogPage() {
       month: "short",
       day: "numeric",
     })
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen dot-grid-bg flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2">Unable to Load Blogs</h2>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <button
+              onClick={() => dispatch(fetchBlogs() as any)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+            >
+              Try Again
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
   }
 
   return (
@@ -86,12 +91,12 @@ export default function BlogPage() {
           </span>
           <div className="flex-1 border-t border-border" />
           <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono">
-            {currentPage} / {totalPages}
+            Total: {pagination.count}
           </span>
         </motion.div>
 
         {/* Header */}
-        {isLoading ? (
+        {listLoading ? (
           <SkeletonHeader />
         ) : (
           <motion.div
@@ -111,7 +116,7 @@ export default function BlogPage() {
         )}
 
         {/* Blog Grid */}
-        {isLoading ? (
+        {listLoading ? (
           <SkeletonBlogGrid />
         ) : (
           <motion.div
@@ -120,10 +125,10 @@ export default function BlogPage() {
             transition={{ duration: 0.5, ease }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
           >
-            {currentPosts.map((post, idx) => (
+            {blogs.map((article, idx) => (
               <motion.div
-                key={post.id}
-                onClick={() => handleOpenDetail(post)}
+                key={article.id}
+                onClick={() => handleOpenDetail(article)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1, duration: 0.5, ease }}
@@ -131,10 +136,10 @@ export default function BlogPage() {
               >
                 {/* Image */}
                 <div className="relative h-40 bg-foreground/5 overflow-hidden">
-                  {post.image_url ? (
+                  {article.image_url ? (
                     <Image
-                      src={post.image_url}
-                      alt={post.name}
+                      src={article.image_url}
+                      alt={article.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -150,26 +155,26 @@ export default function BlogPage() {
                   {/* Category & Date */}
                   <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b-2 border-foreground">
                     <span className="text-[10px] font-mono font-bold text-[#ea580c] bg-[#ea580c]/10 px-2 py-1 uppercase tracking-widest">
-                      {post.category.split(".")[0]}
+                      {article.category.split(".")[0]}
                     </span>
                     <span className="text-[10px] font-mono text-muted-foreground">
-                      {formatDate(post.timestamp)}
+                      {formatDate(article.timestamp)}
                     </span>
                   </div>
 
                   {/* Title */}
                   <h3 className="text-sm font-mono font-bold uppercase tracking-tight mb-2 group-hover:text-[#ea580c] transition-colors line-clamp-2">
-                    {post.name}
+                    {article.name}
                   </h3>
 
                   {/* Description */}
                   <p className="text-xs font-mono text-muted-foreground flex-1 mb-3 line-clamp-2">
-                    {post.description}
+                    {article.description}
                   </p>
 
                   {/* Author */}
                   <div className="text-[10px] font-mono text-muted-foreground border-t-2 border-foreground pt-2">
-                    by {post.author}
+                    by {article.author}
                   </div>
                 </div>
               </motion.div>
@@ -178,7 +183,7 @@ export default function BlogPage() {
         )}
 
         {/* Pagination */}
-        {!isLoading && totalPages > 1 && (
+        {!listLoading && (pagination.next || pagination.previous) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -187,35 +192,22 @@ export default function BlogPage() {
           >
             <button
               onClick={handlePrevPage}
-              disabled={currentPage === 1}
+              disabled={!pagination.previous}
               className="flex items-center gap-2 px-4 py-2 border-2 border-foreground text-xs font-mono tracking-widest uppercase disabled:opacity-50 hover:bg-foreground/10 transition-colors"
             >
               <ChevronLeft size={14} />
               Previous
             </button>
 
-            <div className="flex items-center gap-2">
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setCurrentPage(i + 1)
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }}
-                  className={`w-8 h-8 font-mono text-xs font-bold transition-colors ${
-                    currentPage === i + 1
-                      ? "bg-foreground text-background"
-                      : "border-2 border-foreground text-foreground hover:bg-foreground/10"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+            <div className="flex-1 text-center">
+              <span className="text-xs font-mono text-muted-foreground">
+                {blogs.length} items shown of {pagination.count}
+              </span>
             </div>
 
             <button
               onClick={handleNextPage}
-              disabled={currentPage === totalPages}
+              disabled={!pagination.next}
               className="flex items-center gap-2 px-4 py-2 border-2 border-foreground text-xs font-mono tracking-widest uppercase disabled:opacity-50 hover:bg-foreground/10 transition-colors"
             >
               Next
@@ -228,12 +220,11 @@ export default function BlogPage() {
 
       {/* Detail Slide-Over */}
       <SlideOver
-        isOpen={selectedArticle !== null}
+        isOpen={selectedArticleSlug !== null}
         onClose={handleCloseDetail}
-        title={selectedArticle?.name || "Article Details"}
-        isLoading={isDetailLoading}
+        title="Article Details"
       >
-        {selectedArticle && <BlogDetail article={selectedArticle} />}
+        {selectedArticleSlug && <BlogDetail slug={selectedArticleSlug} />}
       </SlideOver>
     </div>
   )

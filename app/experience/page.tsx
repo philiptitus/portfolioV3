@@ -5,37 +5,47 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { jobs } from '@/data/mock-data'
 import { SkeletonLoader } from '@/components/skeleton-loader'
 import { SlideOver } from '@/components/slide-over'
 import { ExperienceDetail } from '@/components/details/experience-detail'
 import { ExternalLink, Calendar, MapPin, Building2 } from 'lucide-react'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { fetchJobs } from '@/store/actions'
 
 const ease = [0.22, 1, 0.36, 1]
 
 export default function ExperiencePage() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedJob, setSelectedJob] = useState<typeof jobs[0] | null>(null)
-  const [isDetailLoading, setIsDetailLoading] = useState(false)
+  const dispatch = useAppDispatch()
+  const { jobs, listLoading, error, pagination } = useAppSelector(state => state.job)
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null)
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1200)
-    return () => clearTimeout(timer)
-  }, [])
+    dispatch(fetchJobs() as any)
+  }, [dispatch])
+
+  const handlePrevPage = () => {
+    if (pagination.previous) {
+      dispatch(fetchJobs(pagination.previous) as any)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const handleNextPage = () => {
+    if (pagination.next) {
+      dispatch(fetchJobs(pagination.next) as any)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 
   const handleOpenDetail = (job: typeof jobs[0]) => {
-    setIsDetailLoading(true)
-    setTimeout(() => {
-      setSelectedJob(job)
-      setIsDetailLoading(false)
-    }, 600)
+    setSelectedJobId(job.id)
   }
 
   const handleCloseDetail = () => {
-    setSelectedJob(null)
+    setSelectedJobId(null)
   }
 
-  if (isLoading) {
+  if (listLoading) {
     return (
       <div className="min-h-screen dot-grid-bg">
         <Navbar />
@@ -63,6 +73,25 @@ export default function ExperiencePage() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen dot-grid-bg">
+        <Navbar />
+        <main className="w-full px-6 py-20 lg:px-12">
+          <div className="max-w-5xl mx-auto text-center">
+            <p className="text-foreground/60 font-mono mb-4">{error}</p>
+            <button
+              onClick={() => dispatch(fetchJobs() as any)}
+              className="px-4 py-2 border border-foreground hover:bg-foreground/10 transition-colors font-mono text-sm"
+            >
+              Retry
+            </button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen dot-grid-bg">
       <Navbar />
@@ -84,7 +113,7 @@ export default function ExperiencePage() {
               <span className="text-[#ea580c]">Experience</span>
             </h1>
             <p className="text-sm lg:text-base font-mono text-muted-foreground leading-relaxed max-w-2xl">
-              {jobs.length} positions across diverse companies, building scalable systems and leading technical initiatives.
+              {pagination.count || jobs.length} positions across diverse companies, building scalable systems and leading technical initiatives.
             </p>
           </motion.div>
 
@@ -99,7 +128,7 @@ export default function ExperiencePage() {
               {"// CAREER_TIMELINE"}
             </span>
             <div className="flex-1 border-t border-border" />
-            <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono">{jobs.length}</span>
+            <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono">{pagination.count || jobs.length}</span>
           </motion.div>
 
           {/* Experience Cards */}
@@ -172,6 +201,27 @@ export default function ExperiencePage() {
             })}
           </div>
 
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between gap-4 mt-12 pt-8 border-t border-border">
+            <button
+              onClick={handlePrevPage}
+              disabled={!pagination.previous}
+              className="px-4 py-2 border border-foreground font-mono text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed hover:bg-foreground/10 transition-colors"
+            >
+              ← Previous
+            </button>
+            <span className="text-xs font-mono text-muted-foreground">
+              {jobs.length ? `Items: ${jobs.length}` : 'No items'}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={!pagination.next}
+              className="px-4 py-2 border border-foreground font-mono text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed hover:bg-foreground/10 transition-colors"
+            >
+              Next →
+            </button>
+          </div>
+
           {/* Stats section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -181,7 +231,7 @@ export default function ExperiencePage() {
           >
             <div className="p-4 border border-foreground">
               <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono mb-2">Total Positions</p>
-              <p className="text-3xl font-mono font-bold text-foreground">{jobs.length}</p>
+              <p className="text-3xl font-mono font-bold text-foreground">{pagination.count || jobs.length}</p>
             </div>
             <div className="p-4 border border-foreground">
               <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono mb-2">Current Role</p>
@@ -202,12 +252,11 @@ export default function ExperiencePage() {
 
       {/* Detail Slide-Over */}
       <SlideOver
-        isOpen={selectedJob !== null}
+        isOpen={selectedJobId !== null}
         onClose={handleCloseDetail}
-        title={selectedJob?.job_title || "Job Details"}
-        isLoading={isDetailLoading}
+        title="Job Details"
       >
-        {selectedJob && <ExperienceDetail job={selectedJob} />}
+        {selectedJobId && <ExperienceDetail id={selectedJobId} />}
       </SlideOver>
     </div>
   )

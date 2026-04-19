@@ -1,35 +1,95 @@
-# v0-design-brutalist-ai-saa-s
+# Philip Titus | AI-Powered Portfolio Frontend
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+This is the frontend for the **Philip Titus Portfolio V3**, a modern, high-performance web application built with Next.js and TypeScript. It features a sleek, designer-inspired UI and integrates with a custom AI chatbot powered by Google Gemini.
 
-## Built with v0
+## 🚀 Features
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+- **AI Chatbot**: Real-time conversational agent "Philip AI" powered by Gemini 2.5-Flash, maintaining session history via Redis.
+- **Dynamic Portfolio**: Showcase of projects categorized by tier (S, A, B) and technical stack.
+- **Technical Blog**: Integrated blog reader supporting technical articles and AI/ML insights.
+- **Interactive Experience**: Smooth animations using Framer Motion and a "Behind the Screens" section for personal branding.
+- **Modern UI/UX**: Clean aesthetic inspired by premium design patterns, featuring a violet-primary color scheme and responsive grid layouts.
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_8TpuWUx50ueEUkhNLWoZQ7AylS69)
+## 🛠️ Tech Stack
 
-## Getting Started
+- **Framework**: [Next.js 14+ (App Router)](https://nextjs.org/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Components**: [Shadcn/UI](https://ui.shadcn.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Data Fetching**: [SWR](https://swr.vercel.app/) / Fetch API
 
-First, run the development server:
+## 📁 Project Structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+```text
+frontend/
+├── components/         # Reusable UI components (buttons, cards, etc.)
+│   ├── ui/             # Radix-based primitives (Shadcn)
+│   └── chatbot/        # AI Chatbot interface components
+├── hooks/              # Custom React hooks (use-toast, use-chatbot, etc.)
+├── app/                # Next.js App Router (pages & layouts)
+│   ├── blogs/          # Blog listing and detail pages
+│   ├── portfolios/     # Project showcase
+│   └── api/            # Client-side API route handlers
+├── data/               # Mock data for local development/testing
+├── public/             # Static assets (images, icons, resumes)
+└── lib/                # Utility functions and shared constants
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ⚙️ Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Prerequisites
+- Node.js (v18.0.0 or higher)
+- npm or pnpm
 
-## Learn More
+### 2. Installation
+```bash
+cd frontend
+npm install
+```
 
-To learn more, take a look at the following resources:
+### 3. Environment Variables
+Create a `.env.local` file in the root of the frontend directory:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+```env
+NEXT_PUBLIC_LOCAL_URL=http://127.0.0.1:8000/api/
+```
 
-<a href="https://v0.app/chat/api/kiro/clone/rajdesai17/v0-design-brutalist-ai-saa-s" alt="Open in Kiro"><img src="https://pdgvvgmkdvyeydso.public.blob.vercel-storage.com/open%20in%20kiro.svg?sanitize=true" /></a>
+### 4. Development
+```bash
+npm run dev
+```
+Open http://localhost:3000 with your browser to see the result.
+
+## 🎨 Design Philosophy
+
+The frontend follows the **Sruthi Designs** reference guide:
+- **Color Palette**: Primary Purple (`#6B46C1`), Secondary Grays (`#1A1A1A`, `#666666`), and Clean White (`#FFFFFF`).
+- **Typography**: High readability with a focus on line heights (1.6–1.8) and clear heading hierarchies.
+- **Micro-interactions**: Subtle hover scales on cards (1.02x) and smooth transition effects to reduce perceived load times.
+
+## 🤖 AI Chatbot Integration
+
+The frontend communicates with the `portfolio_chatbot` service. 
+- **Endpoint**: `/api/chatbot/chat/`
+- **Session Management**: Uses UUIDs generated on the client and stored in Redis server-side to persist conversation history.
+
+## 📊 Data & Mocking
+
+During development, the frontend can use the static data located in `frontend/data/mock-data.ts`. This allows for UI building without a live connection to the Django backend.
+
+## 🚢 Deployment
+
+The application is optimized for deployment on **Vercel**:
+```bash
+npm run build
+```
+Ensure all environment variables are configured in the Vercel dashboard.
+
+---
+*Developed with ❤️ by Philip Titus*
+<!-- 
+[PROMPT_SUGGESTION]How can I improve the accessibility of my portfolio frontend components?[/PROMPT_SUGGESTION]
+[PROMPT_SUGGESTION]Can you help me write a useChatbot hook to handle the API calls to the Gemini backend?[/PROMPT_SUGGESTION]
+-->

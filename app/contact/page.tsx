@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { Send, Mail, CheckCircle } from 'lucide-react'
+import { Send, Mail, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { submitContactForm, resetContactState } from '@/store/actions'
 
 const ease = [0.22, 1, 0.36, 1] as const
 
@@ -12,27 +14,44 @@ interface FormData {
   name: string
   email: string
   category: string
+  other_category?: string
   message: string
 }
 
 const categories = [
   'WEB DEVELOPMENT',
   'MACHINE LEARNING',
+  'MOBILE APP DEV',
   'DEVOPS & INFRASTRUCTURE',
   'CONSULTING',
   'OTHER',
 ]
 
 export default function ContactPage() {
+  const dispatch = useAppDispatch()
+  const { loading, submitted, error } = useAppSelector(state => state.contact)
+  
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     category: 'WEB DEVELOPMENT',
+    other_category: '',
     message: '',
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState('')
+
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+
+  // Auto-hide success message after 5 seconds
+  useEffect(() => {
+    if (submitted) {
+      setShowSuccessMessage(true)
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false)
+        dispatch(resetContactState())
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [submitted, dispatch])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -44,29 +63,28 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    setIsSubmitting(true)
+    
+    // Prepare form data
+    const submitData = {
+      name: formData.name,
+      email: formData.email,
+      category: formData.category,
+      message: formData.message,
+      ...(formData.category === 'OTHER' && formData.other_category && { other_category: formData.other_category }),
+    }
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1200))
+    // Dispatch the contact form submission
+    dispatch(submitContactForm(submitData) as any)
 
-      // Here you would normally call your API endpoint
-      // const response = await fetch('/api/contact', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // })
-
-      setSubmitted(true)
-      setFormData({ name: '', email: '', category: 'WEB DEVELOPMENT', message: '' })
-
-      // Reset success message after 5 seconds
-      setTimeout(() => setSubmitted(false), 5000)
-    } catch (err) {
-      setError('Failed to send message. Please try again.')
-    } finally {
-      setIsSubmitting(false)
+    // Reset form on successful submission
+    if (!error) {
+      setFormData({
+        name: '',
+        email: '',
+        category: 'WEB DEVELOPMENT',
+        other_category: '',
+        message: '',
+      })
     }
   }
 
@@ -110,10 +128,12 @@ export default function ContactPage() {
               Send Message
             </h2>
 
-            {submitted && (
+            {/* Success Message */}
+            {showSuccessMessage && submitted && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
                 className="mb-6 border-2 border-[#ea580c] bg-[#ea580c]/10 p-4 flex items-start gap-3"
               >
                 <CheckCircle size={16} className="text-[#ea580c] flex-shrink-0 mt-0.5" />
@@ -126,13 +146,35 @@ export default function ContactPage() {
               </motion.div>
             )}
 
+            {/* Error Message */}
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 border-2 border-red-500 bg-red-500/10 p-4"
+                className="mb-6 border-2 border-red-500 bg-red-500/10 p-4 flex items-start gap-3"
               >
-                <p className="text-xs font-mono text-red-600">{error}</p>
+                <AlertCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-mono font-bold text-red-600 uppercase">Error</p>
+                  <p className="text-xs font-mono text-red-600 mt-1">{error}</p>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Loading State */}
+            {loading && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 border-2 border-[#ea580c] bg-[#ea580c]/10 p-4 flex items-start gap-3"
+              >
+                <Loader2 size={16} className="text-[#ea580c] flex-shrink-0 mt-0.5 animate-spin" />
+                <div>
+                  <p className="text-xs font-mono font-bold text-[#ea580c] uppercase">Sending</p>
+                  <p className="text-xs font-mono text-muted-foreground mt-1">
+                    Please wait while we submit your message...
+                  </p>
+                </div>
               </motion.div>
             )}
 
@@ -148,7 +190,8 @@ export default function ContactPage() {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full border border-foreground bg-background text-foreground p-2 text-xs font-mono focus:outline-none focus:border-[#ea580c] transition-colors"
+                  disabled={loading}
+                  className="w-full border border-foreground bg-background text-foreground p-2 text-xs font-mono focus:outline-none focus:border-[#ea580c] transition-colors disabled:opacity-50"
                   placeholder="John Doe"
                 />
               </div>
@@ -164,7 +207,8 @@ export default function ContactPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="w-full border border-foreground bg-background text-foreground p-2 text-xs font-mono focus:outline-none focus:border-[#ea580c] transition-colors"
+                  disabled={loading}
+                  className="w-full border border-foreground bg-background text-foreground p-2 text-xs font-mono focus:outline-none focus:border-[#ea580c] transition-colors disabled:opacity-50"
                   placeholder="you@example.com"
                 />
               </div>
@@ -178,7 +222,8 @@ export default function ContactPage() {
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full border border-foreground bg-background text-foreground p-2 text-xs font-mono focus:outline-none focus:border-[#ea580c] transition-colors cursor-pointer"
+                  disabled={loading}
+                  className="w-full border border-foreground bg-background text-foreground p-2 text-xs font-mono focus:outline-none focus:border-[#ea580c] transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -187,6 +232,29 @@ export default function ContactPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Other Category Field (conditional) */}
+              {formData.category === 'OTHER' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <label className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-mono block mb-2">
+                    Please specify (optional)
+                  </label>
+                  <input
+                    type="text"
+                    name="other_category"
+                    value={formData.other_category || ''}
+                    onChange={handleInputChange}
+                    disabled={loading}
+                    className="w-full border border-foreground bg-background text-foreground p-2 text-xs font-mono focus:outline-none focus:border-[#ea580c] transition-colors disabled:opacity-50"
+                    placeholder="e.g., Blockchain Development, Data Science..."
+                  />
+                </motion.div>
+              )}
 
               {/* Message */}
               <div>
@@ -198,24 +266,29 @@ export default function ContactPage() {
                   value={formData.message}
                   onChange={handleInputChange}
                   required
+                  disabled={loading}
                   rows={5}
-                  className="w-full border border-foreground bg-background text-foreground p-2 text-xs font-mono focus:outline-none focus:border-[#ea580c] transition-colors resize-none"
+                  className="w-full border border-foreground bg-background text-foreground p-2 text-xs font-mono focus:outline-none focus:border-[#ea580c] transition-colors resize-none disabled:opacity-50"
                   placeholder="Tell me about your project or inquiry..."
                 />
               </div>
 
               {/* Submit Button */}
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={isSubmitting || submitted}
+                whileHover={!loading ? { scale: 1.02 } : {}}
+                whileTap={!loading ? { scale: 0.98 } : {}}
+                disabled={loading || submitted}
                 className="group w-full mt-6 flex items-center gap-0 bg-foreground text-background text-xs font-mono tracking-wider uppercase border-2 border-foreground hover:bg-background hover:text-foreground disabled:opacity-60 transition-colors duration-200"
               >
                 <span className="flex items-center justify-center w-10 h-10 bg-[#ea580c]">
-                  <Send size={14} strokeWidth={2} className="text-background" />
+                  {loading ? (
+                    <Loader2 size={14} strokeWidth={2} className="text-background animate-spin" />
+                  ) : (
+                    <Send size={14} strokeWidth={2} className="text-background" />
+                  )}
                 </span>
                 <span className="flex-1 py-2.5">
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                  {loading ? 'Sending...' : submitted ? 'Message Sent!' : 'Send Message'}
                 </span>
               </motion.button>
             </form>
@@ -237,10 +310,10 @@ export default function ContactPage() {
                     Email
                   </h3>
                   <a
-                    href="mailto:mrptjobs@gmail.com"
+                    href="mailto:hi@filipio.com"
                     className="text-xs font-mono text-muted-foreground hover:text-[#ea580c] transition-colors"
                   >
-                    mrptjobs@gmail.com
+                    hi@filipio.com
                   </a>
                 </div>
               </div>

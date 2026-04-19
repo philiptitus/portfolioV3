@@ -4,6 +4,7 @@ import { GeistPixelGrid } from 'geist/font/pixel'
 import { ThemeProvider } from '@/components/theme-provider'
 import { ChatProvider } from '@/contexts/chat-context'
 import { FloatingChatButton } from '@/components/floating-chat-button'
+import { ReduxProvider } from '@/components/providers/redux-provider'
 
 import './globals.css'
 
@@ -82,12 +83,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jetbrainsMono.variable} ${GeistPixelGrid.variable}`} suppressHydrationWarning>
       <body className="font-mono antialiased">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
-          <ChatProvider>
-            {children}
-            <FloatingChatButton />
-          </ChatProvider>
-        </ThemeProvider>
+        <ReduxProvider>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+            <ChatProvider>
+              {children}
+              <FloatingChatButton />
+            </ChatProvider>
+          </ThemeProvider>
+        </ReduxProvider>
       </body>
     </html>
   )

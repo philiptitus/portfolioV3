@@ -17,7 +17,7 @@ export function HeroSection() {
           transition={{ duration: 0.7, ease }}
           className="font-pixel text-4xl sm:text-6xl lg:text-7xl xl:text-8xl tracking-tight text-foreground mb-2 select-none"
         >
-          BUILD. SCALE.
+         PHILIP. TITUS.
         </motion.h1>
 
         {/* Central Workflow Diagram */}
@@ -38,7 +38,7 @@ export function HeroSection() {
           className="font-pixel text-4xl sm:text-6xl lg:text-7xl xl:text-8xl tracking-tight text-foreground mb-4 select-none"
           aria-hidden="true"
         >
-          SHIP.
+          SE/ML.
         </motion.h1>
 
         {/* Sub-headline */}
@@ -52,7 +52,8 @@ export function HeroSection() {
         </motion.p>
 
         {/* CTA Button */}
-        <motion.button
+        <motion.a
+          href="/contact"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6, ease }}
@@ -72,7 +73,7 @@ export function HeroSection() {
           <span className="px-5 py-2.5">
             Contact Me
           </span>
-        </motion.button>
+        </motion.a>
       </div>
     </section>
   )

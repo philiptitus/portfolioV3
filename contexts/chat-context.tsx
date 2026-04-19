@@ -1,6 +1,8 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react'
+import { useAppDispatch } from '@/store/hooks'
+import { sendChatMessage } from '@/store/actions'
 
 interface ChatContextType {
   isOpen: boolean
@@ -14,10 +16,16 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined)
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [initialMessage, setInitialMessage] = useState<string | undefined>()
+  const dispatch = useAppDispatch()
 
   const openChat = (message?: string) => {
     setInitialMessage(message)
     setIsOpen(true)
+    
+    // Immediately send the message if provided
+    if (message) {
+      dispatch(sendChatMessage(message) as any)
+    }
   }
 
   const closeChat = () => {
