@@ -4,6 +4,12 @@ import { motion } from "framer-motion"
 
 const ease = [0.22, 1, 0.36, 1] as const
 
+const socialLinks = [
+  { label: "LinkedIn", href: "https://linkedin.com/in/philiptitus" },
+  { label: "GitHub", href: "https://github.com/philiptitus" },
+  { label: "Email", href: "mailto:hi@filipio.com" },
+]
+
 export function Footer() {
   return (
     <motion.footer
@@ -23,17 +29,19 @@ export function Footer() {
           </span>
         </div>
         <div className="flex items-center gap-6">
-          {["Twitter", "LinkedIn", "GitHub", "Email"].map((link, i) => (
+          {socialLinks.map((link, i) => (
             <motion.a
-              key={link}
-              href="#"
+              key={link.label}
+              href={link.href}
+              target={link.label !== "Email" ? "_blank" : undefined}
+              rel={link.label !== "Email" ? "noopener noreferrer" : undefined}
               initial={{ opacity: 0, y: 6 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 + i * 0.06, duration: 0.4, ease }}
               className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
-              {link}
+              {link.label}
             </motion.a>
           ))}
         </div>

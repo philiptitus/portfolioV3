@@ -66,11 +66,6 @@ export function TerminalCard({ isModal = false, initialMessage }: TerminalCardPr
     dispatch(loadChatbotSession() as any)
   }, [dispatch])
 
-  // Auto-scroll to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
-
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
     const input = inputRef.current?.value.trim()

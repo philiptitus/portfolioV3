@@ -22,7 +22,7 @@ export function PortfolioShowcase({ projects, onProjectClick }: PortfolioShowcas
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
+        viewport={{ once: true }}
         transition={{ duration: 0.5, ease }}
         className="grid grid-cols-1 lg:grid-cols-2 gap-4"
       >
@@ -73,7 +73,7 @@ export function PortfolioShowcase({ projects, onProjectClick }: PortfolioShowcas
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
+          viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2, ease }}
           className="grid grid-cols-1 sm:grid-cols-3 gap-4"
         >

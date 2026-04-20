@@ -5,6 +5,7 @@ import { Navbar } from "@/components/navbar"
 import { HeroSection } from "@/components/hero-section"
 import { FeatureGrid } from "@/components/feature-grid"
 import { AboutSection } from "@/components/about-section"
+import { CertificatesSection } from "@/components/certificates-section"
 import { PricingSection } from "@/components/pricing-section"
 import { ExperienceSection } from "@/components/experience-section"
 import { GlitchMarquee } from "@/components/glitch-marquee"
@@ -93,7 +94,7 @@ export default function Page() {
       <main>
         <HeroSection />
         <FeatureGrid onPortfolioClick={handleOpenProjectDetail} />
-        <AboutSection />
+        <CertificatesSection />
         <ExperienceSection jobs={jobs} onJobClick={handleOpenJobDetail} />
         <GlitchMarquee skills={keySkills} />
         <PricingSection blogs={blogs} onBlogClick={handleOpenBlogDetail} />

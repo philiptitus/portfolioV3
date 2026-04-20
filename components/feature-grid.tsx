@@ -18,7 +18,7 @@ export function FeatureGrid({ onPortfolioClick }: FeatureGridProps) {
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
+        viewport={{ once: true }}
         transition={{ duration: 0.5, ease }}
         className="flex items-center gap-4 mb-8"
       >
@@ -33,7 +33,7 @@ export function FeatureGrid({ onPortfolioClick }: FeatureGridProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-60px" }}
+        viewport={{ once: true }}
         transition={{ duration: 0.6, ease }}
         className="mb-12"
       >
@@ -44,7 +44,7 @@ export function FeatureGrid({ onPortfolioClick }: FeatureGridProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-60px" }}
+        viewport={{ once: true }}
         transition={{ duration: 0.6, delay: 0.1, ease }}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 border-2 border-foreground gap-0">
