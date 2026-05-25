@@ -11,12 +11,12 @@ function BlinkDot() {
   return <span className="inline-block h-2 w-2 bg-[#ea580c] animate-blink" />
 }
 
-interface PricingSectionProps {
+interface BlogsSectionProps {
   blogs?: Blog[]
   onBlogClick?: (blog: Blog) => void
 }
 
-export function PricingSection({ blogs = [], onBlogClick }: PricingSectionProps) {
+export function BlogsSection({ blogs = [], onBlogClick }: BlogsSectionProps) {
   return (
     <section className="w-full px-6 py-20 lg:px-12 border-t-2 border-foreground">
       {/* Section label */}

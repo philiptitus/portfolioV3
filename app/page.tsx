@@ -6,7 +6,7 @@ import { HeroSection } from "@/components/hero-section"
 import { FeatureGrid } from "@/components/feature-grid"
 import { AboutSection } from "@/components/about-section"
 import { CertificatesSection } from "@/components/certificates-section"
-import { PricingSection } from "@/components/pricing-section"
+import { BlogsSection } from "@/components/blogs-section"
 import { ExperienceSection } from "@/components/experience-section"
 import { GlitchMarquee } from "@/components/glitch-marquee"
 import { Footer } from "@/components/footer"
@@ -17,7 +17,7 @@ import { PortfolioDetail } from "@/components/details/portfolio-detail"
 import { BlogDetail } from "@/components/details/blog-detail"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { fetchDashboard } from "@/store/actions"
-import { jobs, keySkills, blogs, portfolioProjects } from "@/data/mock-data"
+import { jobs, keySkills, portfolioProjects, Blog } from "@/data/mock-data"
 
 export default function Page() {
   const dispatch = useAppDispatch()
@@ -40,7 +40,7 @@ export default function Page() {
     setSelectedProjectSlug(project.slug)
   }
 
-  const handleOpenBlogDetail = (blog: typeof blogs[0]) => {
+  const handleOpenBlogDetail = (blog: Blog) => {
     setSelectedBlogSlug(blog.slug)
   }
 
@@ -97,7 +97,7 @@ export default function Page() {
         <CertificatesSection />
         <ExperienceSection jobs={jobs} onJobClick={handleOpenJobDetail} />
         <GlitchMarquee skills={keySkills} />
-        <PricingSection blogs={blogs} onBlogClick={handleOpenBlogDetail} />
+        <BlogsSection blogs={dashboardData?.blogs || []} onBlogClick={handleOpenBlogDetail} />
       </main>
       <Footer />
 

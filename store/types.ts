@@ -115,10 +115,12 @@ export interface JobDetail extends Job {
 
 // Dashboard Types
 export interface DashboardData {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: any[];
+  skills: Skill[];
+  certificates: Certificate[];
+  blogs: Blog[];
+  portfolio: Portfolio[];
+  awards: Award[];
+  jobs: Job[];
 }
 
 // API Response Types
