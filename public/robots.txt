@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://filipio.com
+
+# Sitemaps
+Sitemap: https://filipio.com/sitemap.xml

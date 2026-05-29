@@ -1,9 +1,8 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://pservice.mrphilip.cv/api';
-
+// Use relative /api path - Next.js rewrites will proxy to the actual backend
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },

@@ -107,7 +107,7 @@ export function Navbar() {
               whileTap={{ scale: 0.98 }}
               className="bg-foreground text-background px-4 py-2 text-xs font-mono tracking-widest uppercase inline-block"
             >
-              Hire Me
+              Get a Quote
             </motion.a>
           </motion.div>
         </div>

@@ -83,6 +83,22 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jetbrainsMono.variable} ${GeistPixelGrid.variable}`} suppressHydrationWarning>
       <body className="font-mono antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Person',
+              name: 'Philip Titus',
+              jobTitle: 'Software Engineer & ML Engineer',
+              url: 'https://philiptitus.vercel.app',
+              sameAs: [
+                'https://github.com/philiptitus',
+                'https://linkedin.com/in/philip-titus',
+              ],
+            }),
+          }}
+        />
         <ReduxProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
             <ChatProvider>

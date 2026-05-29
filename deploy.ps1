@@ -1,5 +1,6 @@
 # Google Cloud Run Deployment Script for Portfolio Frontend
-# PowerShell version - This script deploys the Next.js application with all environment variables properly configured
+# PowerShell version - This script deploys the Next.js application
+# API requests are proxied via Next.js rewrites - no env vars needed!
 
 gcloud run deploy portfolio-frontend `
   --source ./ `
@@ -10,7 +11,6 @@ gcloud run deploy portfolio-frontend `
   --cpu=1 `
   --platform=managed `
   --allow-unauthenticated `
-  --set-env-vars NEXT_PUBLIC_API_URL=https://pservice.mrphilip.cv/api `
   --set-env-vars NODE_ENV=production
 
 if ($LASTEXITCODE -eq 0) {
