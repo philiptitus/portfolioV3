@@ -9,6 +9,7 @@ export function Navbar() {
   const [showMore, setShowMore] = useState(false)
 
   const navItems = [
+    { label: "About", href: "/about" },
     { label: "Portfolio", href: "/portfolio" },
     { label: "Blog", href: "/blog" },
     { label: "Certifications", href: "/certifications" },

@@ -91,10 +91,10 @@ export default function RootLayout({
               '@type': 'Person',
               name: 'Philip Titus',
               jobTitle: 'Software Engineer & ML Engineer',
-              url: 'https://philiptitus.vercel.app',
+              url: 'https://filipio.com',
               sameAs: [
                 'https://github.com/philiptitus',
-                'https://linkedin.com/in/philip-titus',
+                'https://linkedin.com/in/philiptitus',
               ],
             }),
           }}
