@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import { Navbar } from '@/components/navbar'
+import { Footer } from '@/components/footer'
 
 export const metadata: Metadata = {
   title: 'About – Philip Titus | Software & ML Engineer',
@@ -9,14 +11,12 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="min-h-screen dot-grid-bg">
+      <Navbar />
       <main className="w-full px-6 py-20 lg:px-12">
         <div className="max-w-4xl mx-auto">
 
           {/* Header */}
           <div className="mb-16">
-            <Link href="/" className="text-xs font-mono tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors mb-6 inline-block">
-              ← BACK TO HOME
-            </Link>
             <h1 className="text-4xl lg:text-5xl font-mono font-bold tracking-tight uppercase mb-4">
               Philip Titus
             </h1>
@@ -35,7 +35,7 @@ export default function AboutPage() {
             </div>
 
             <p className="text-sm lg:text-base font-mono leading-relaxed">
-              Philip Titus is a software engineer based in Nairobi, Kenya with over 5 years of experience building scalable backend systems, intelligent machine learning pipelines, and cloud-native infrastructure. His core expertise spans Django, Python, Next.js, and Google Cloud Platform — the full stack from database to deployment.
+              Philip Titus is a software engineer based in Nairobi, Kenya with over 5 years of experience building scalable backend systems, intelligent machine learning pipelines, and cloud-native infrastructure. His core expertise spans Django, Python, Next.js, AWS, and Google Cloud Platform — the full stack from database to deployment.
             </p>
 
             <p className="text-sm lg:text-base font-mono leading-relaxed">
@@ -151,6 +151,7 @@ export default function AboutPage() {
 
         </div>
       </main>
+      <Footer />
     </div>
   )
 }

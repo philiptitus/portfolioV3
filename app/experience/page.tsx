@@ -9,5 +9,13 @@ export const metadata: Metadata = {
 
 export default async function ExperiencePage() {
   const initialData = await serverFetch('/api/jobs/')
-  return <ExperienceClient initialData={initialData} />
+  return (
+    <>
+      <div className="sr-only">
+        <h1>Philip Titus — Professional Experience</h1>
+        <p>Professional work history of Philip Titus — software engineer based in Nairobi, Kenya with experience at Velvora, Youth Enterprise Development Fund, CheapTrip, Freshly Farms and as a freelance engineer on Upwork and Fiverr.</p>
+      </div>
+      <ExperienceClient initialData={initialData} />
+    </>
+  )
 }

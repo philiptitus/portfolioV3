@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Cpu, ChevronDown } from "lucide-react"
 import { motion } from "framer-motion"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -31,32 +32,26 @@ export function Navbar() {
       <nav className="w-full border border-foreground/20 bg-background/80 backdrop-blur-sm px-6 py-3 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <motion.a
+          <Link
             href="/"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
             <Cpu size={16} strokeWidth={1.5} />
             <span className="text-xs font-mono tracking-[0.15em] uppercase font-bold">
               FILIPIO.COM
             </span>
-          </motion.a>
+          </Link>
 
           {/* Center nav links */}
           <div className="hidden md:flex items-center gap-6">
             {navItems.map((item, i) => (
-              <motion.a
+              <Link
                 key={item.label}
                 href={item.href}
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 className="text-xs font-mono tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors duration-200"
               >
                 {item.label}
-              </motion.a>
+              </Link>
             ))}
 
             {/* More dropdown */}
@@ -75,13 +70,13 @@ export function Navbar() {
                   className="absolute right-0 mt-2 border border-foreground bg-background z-50"
                 >
                   {moreItems.map((item) => (
-                    <a
+                    <Link
                       key={item.label}
                       href={item.href}
                       className="block px-4 py-2 text-xs font-mono tracking-widest uppercase text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors border-b last:border-b-0"
                     >
                       {item.label}
-                    </a>
+                    </Link>
                   ))}
                 </motion.div>
               )}
@@ -89,12 +84,7 @@ export function Navbar() {
           </div>
 
           {/* Right side: Contact + CTA */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.4 }}
-            className="flex items-center gap-4"
-          >
+          <div className="flex items-center gap-4">
             <ThemeToggle />
             <a
               href="mailto:hi@filipio.com"
@@ -102,15 +92,13 @@ export function Navbar() {
             >
               Email
             </a>
-            <motion.a
+            <Link
               href="/contact"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="bg-foreground text-background px-4 py-2 text-xs font-mono tracking-widest uppercase inline-block"
+              className="bg-foreground text-background px-4 py-2 text-xs font-mono tracking-widest uppercase inline-block hover:opacity-90 transition-opacity"
             >
               Get a Quote
-            </motion.a>
-          </motion.div>
+            </Link>
+          </div>
         </div>
       </nav>
     </motion.div>
