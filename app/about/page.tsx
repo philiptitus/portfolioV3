@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   description: 'Philip Titus is a software engineer based in Nairobi, Kenya specialising in backend development, machine learning and cloud architecture. Available for freelance projects and product collaborations.',
 }
 
+
 export default function AboutPage() {
   return (
     <div className="min-h-screen dot-grid-bg">
