@@ -1,5 +1,10 @@
 environment = "prod"
-backend_url = "https://pservice.mrphilip.cv"
+
+# Use the default Cloud Run URL, not the pservice.mrphilip.cv custom domain
+# — server-to-server calls from the frontend container hit ENOTFOUND
+# against the custom domain's DNS from within Cloud Run's network. The
+# *.run.app hostname is already in the backend's ALLOWED_HOSTS.
+backend_url = "https://portfolio-yfdoo3vmfq-ew.a.run.app"
 
 # Pins the baseline apply to the currently-live image so importing/adopting
 # this already-running service into Terraform doesn't briefly swap it for
