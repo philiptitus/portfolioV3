@@ -1,0 +1,107 @@
+name: 'Terraform CI'
+
+on:
+  push:
+    branches:
+    - main
+    - develop
+  pull_request:
+
+env:
+  PROJECT_ID: fiona-464509
+  REGION: europe-west1
+  REPO: portfolio-frontend
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Maps branch -> environment. Pull requests use the PR's target branch
+    # (base_ref), not the source branch, since that's the environment the
+    # PR would actually deploy to once merged.
+    - name: Determine environment
+      id: env
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          REF="${{ github.base_ref }}"
+        else
+          REF="${{ github.ref_name }}"
+        fi
+
+        case "$REF" in
+          main) echo "environment=prod" >> "$GITHUB_OUTPUT" ;;
+          develop) echo "environment=dev" >> "$GITHUB_OUTPUT" ;;
+          *)
+            echo "No environment mapping for branch '$REF'"
+            exit 1
+            ;;
+        esac
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform Init
+      run: terraform init
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    - name: Terraform Workspace Select
+      run: terraform workspace select ${{ steps.env.outputs.environment }} || terraform workspace new ${{ steps.env.outputs.environment }}
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    - name: Terraform Plan
+      run: terraform plan -var-file=terraform.tfvars -var-file=${{ steps.env.outputs.environment }}.tfvars
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    # Baseline apply first — guarantees the service account exists before
+    # we try to deploy a real image.
+    - name: Terraform Apply (infra baseline)
+      if: github.event_name == 'push'
+      run: terraform apply -auto-approve -var-file=terraform.tfvars -var-file=${{ steps.env.outputs.environment }}.tfvars
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    - name: Authenticate to Google Cloud
+      if: github.event_name == 'push'
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    - name: Set up Cloud SDK
+      if: github.event_name == 'push'
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Configure Docker for Artifact Registry
+      if: github.event_name == 'push'
+      run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+    - name: Build and push frontend image
+      if: github.event_name == 'push'
+      id: build_frontend
+      run: |
+        IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/frontend:${{ steps.env.outputs.environment }}-${{ github.sha }}"
+        docker build -t "$IMAGE" .
+        docker push "$IMAGE"
+        echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+    # Second apply — points this environment's Cloud Run service at the
+    # image just pushed.
+    - name: Terraform Apply (deploy image)
+      if: github.event_name == 'push'
+      run: |
+        terraform apply -auto-approve \
+          -var-file=terraform.tfvars -var-file=${{ steps.env.outputs.environment }}.tfvars \
+          -var="frontend_image=${{ steps.build_frontend.outputs.image }}"
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
