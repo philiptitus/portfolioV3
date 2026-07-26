@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
-import { ReactNode } from "react"
+import { ReactNode, useEffect } from "react"
 
 interface SlideOverProps {
   isOpen: boolean
@@ -13,6 +13,20 @@ interface SlideOverProps {
 }
 
 export function SlideOver({ isOpen, onClose, title, children, isLoading = false }: SlideOverProps) {
+  // Without this, the document behind the panel stays scrollable. On wide
+  // screens with a classic OS scrollbar, that scrollbar renders at the
+  // viewport edge above everything else (including this panel's z-50), so
+  // dragging it or scrolling near that edge moves the page instead of the
+  // panel's own content.
+  useEffect(() => {
+    if (!isOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isOpen])
+
   return (
     <AnimatePresence>
       {isOpen && (
