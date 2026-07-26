@@ -43,7 +43,7 @@ resource "google_service_account" "frontend_sa" {
 resource "google_cloud_run_v2_service" "frontend" {
   name                = local.frontend_service_name
   location            = var.region
-  deletion_protection = false
+  deletion_protection = var.deletion_protection
 
   template {
     service_account = google_service_account.frontend_sa.email
