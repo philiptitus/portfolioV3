@@ -1,0 +1,42 @@
+name: 'One-off: Apply shared Artifact Registry'
+
+# Run this once, manually, before the first deploy — creates the shared
+# Artifact Registry repo (and its API enablement) via the independent
+# shared/ Terraform root.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  apply-shared:
+    name: 'Apply shared/'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform Init
+      working-directory: ./shared
+      run: terraform init
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    - name: Terraform Plan
+      working-directory: ./shared
+      run: terraform plan
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    - name: Terraform Apply
+      working-directory: ./shared
+      run: terraform apply -auto-approve
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}

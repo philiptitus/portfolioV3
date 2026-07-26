@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Django backend URL
-const BACKEND_URL = 'https://portfolio-136431337991.europe-west1.run.app';
+const BACKEND_URL = process.env.BACKEND_URL || 'https://portfolio-136431337991.europe-west1.run.app';
 
 // Proxy all requests to Django backend
 export async function GET(

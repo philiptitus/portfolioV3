@@ -1,0 +1,58 @@
+name: 'Terraform Destroy'
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to destroy'
+        required: true
+        type: choice
+        options:
+        - dev
+        - prod
+      confirm:
+        description: 'Type the environment name again to confirm (e.g. "dev")'
+        required: true
+
+jobs:
+  destroy:
+    name: 'Terraform Destroy'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Check confirmation input
+      run: |
+        if [ "${{ github.event.inputs.confirm }}" != "${{ github.event.inputs.environment }}" ]; then
+          echo "Confirmation text did not match the selected environment ('${{ github.event.inputs.environment }}'). Aborting."
+          exit 1
+        fi
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform Init
+      run: terraform init
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    - name: Terraform Workspace Select
+      run: terraform workspace select "${{ github.event.inputs.environment }}"
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    - name: Terraform Plan (destroy)
+      run: terraform plan -destroy -var-file=terraform.tfvars -var-file=${{ github.event.inputs.environment }}.tfvars
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve -var-file=terraform.tfvars -var-file=${{ github.event.inputs.environment }}.tfvars
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
