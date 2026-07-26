@@ -28,3 +28,9 @@ variable "backend_url" {
   type        = string
   description = "Base URL of the Django backend this frontend proxies /api/* to (no trailing slash)"
 }
+
+variable "deletion_protection" {
+  type        = bool
+  description = "Blocks terraform destroy from removing the Cloud Run service in one step. Keep true for prod; dev overrides to false so the destroy workflow can tear it down freely."
+  default     = true
+}
