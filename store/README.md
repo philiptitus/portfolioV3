@@ -133,12 +133,7 @@ dispatch(sendChatMessage('Hello chatbot') as any);
 
 ## Environment Variables
 
-The API base URL is defined in `.env.local`:
-```
-NEXT_PUBLIC_API_URL=https://pservice.mrphilip.cv/api
-```
-
-This is automatically picked up by the axios instance in `lib/api.ts`.
+The axios instance in `lib/api.ts` uses a fixed relative `baseURL: '/api'` — requests go through the Next.js proxy route (`app/api/[...path]/route.ts`), which forwards them to the Django backend at `BACKEND_URL` (a Cloud Run env var set via Terraform per environment, not `NEXT_PUBLIC_API_URL`).
 
 ## API Endpoints Covered
 
