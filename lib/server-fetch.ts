@@ -1,4 +1,4 @@
-const BACKEND_URL = process.env.BACKEND_URL || 'https://portfolio-136431337991.europe-west1.run.app';
+const BACKEND_URL = process.env.BACKEND_URL!;
 
 
 export async function serverFetchDashboard() {

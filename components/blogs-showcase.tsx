@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Blog } from "@/data/mock-data"
+import { Blog } from "@/store/types"
 import Image from "next/image"
 import { ArrowRight } from "lucide-react"
 

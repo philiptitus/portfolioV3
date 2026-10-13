@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Blog } from "@/data/mock-data"
+import { Blog } from "@/store/types"
 import { BlogsShowcase } from "@/components/blogs-showcase"
 
 const ease = [0.22, 1, 0.36, 1] as const
@@ -65,5 +65,4 @@ export function BlogsSection({ blogs = [], onBlogClick }: BlogsSectionProps) {
     </section>
   )
 }
-
 

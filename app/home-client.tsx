@@ -17,12 +17,13 @@ import { PortfolioDetail } from "@/components/details/portfolio-detail"
 import { BlogDetail } from "@/components/details/blog-detail"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { fetchDashboard } from "@/store/actions"
-import { jobs, keySkills, portfolioProjects, Blog } from "@/data/mock-data"
+import { Blog, DashboardData, Job, Portfolio, Skill } from "@/store/types"
 
-export default function HomeClient({ initialData }: { initialData?: any }) {
+export default function HomeClient({ initialData }: { initialData?: DashboardData | null }) {
   const dispatch = useAppDispatch()
   const { data: dashboardData, loading, error } = useAppSelector(state => state.dashboard)
-  
+  const homeData = dashboardData || initialData
+
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null)
   const [selectedProjectSlug, setSelectedProjectSlug] = useState<string | null>(null)
   const [selectedBlogSlug, setSelectedBlogSlug] = useState<string | null>(null)
@@ -36,11 +37,11 @@ export default function HomeClient({ initialData }: { initialData?: any }) {
     }
   }, [])
 
-  const handleOpenJobDetail = (job: typeof jobs[0]) => {
+  const handleOpenJobDetail = (job: Job) => {
     setSelectedJobId(job.id)
   }
 
-  const handleOpenProjectDetail = (project: typeof portfolioProjects[0]) => {
+  const handleOpenProjectDetail = (project: Portfolio) => {
     setSelectedProjectSlug(project.slug)
   }
 
@@ -55,7 +56,7 @@ export default function HomeClient({ initialData }: { initialData?: any }) {
   }
 
   // Show loading skeleton if dashboard is loading
-  if (loading) {
+  if (loading || (!homeData && !error)) {
     return (
       <div className="min-h-screen dot-grid-bg">
         <Navbar />
@@ -97,11 +98,17 @@ export default function HomeClient({ initialData }: { initialData?: any }) {
       <Navbar />
       <main>
         <HeroSection />
-        <FeatureGrid onPortfolioClick={handleOpenProjectDetail} />
-        <CertificatesSection />
-        <ExperienceSection jobs={jobs} onJobClick={handleOpenJobDetail} />
-        <GlitchMarquee skills={keySkills} />
-        <BlogsSection blogs={dashboardData?.blogs || []} onBlogClick={handleOpenBlogDetail} />
+        <FeatureGrid
+          projects={homeData?.portfolio || []}
+          onPortfolioClick={handleOpenProjectDetail}
+        />
+        <CertificatesSection
+          certificates={homeData?.certificates || []}
+          projectCount={homeData?.portfolio.length || 0}
+        />
+        <ExperienceSection jobs={homeData?.jobs || []} onJobClick={handleOpenJobDetail} />
+        <GlitchMarquee skills={homeData?.skills.filter((skill: Skill) => skill.is_key_skill) || []} />
+        <BlogsSection blogs={homeData?.blogs || []} onBlogClick={handleOpenBlogDetail} />
       </main>
       <Footer />
 

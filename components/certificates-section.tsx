@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import { CertificatesGrid } from "@/components/certificates-grid"
-import { certificates } from "@/data/mock-data"
+import { Certificate } from "@/store/types"
 
 const ease = [0.22, 1, 0.36, 1] as const
 
@@ -50,13 +50,6 @@ function BlinkDot() {
 }
 
 /* ── stat block ── */
-const STATS = [
-  { label: "PROJECTS_COMPLETED", value: "15+" },
-  { label: "CERTIFICATIONS", value: "8" },
-  { label: "GITHUB_CONTRIBUTIONS", value: "2400+" },
-  { label: "EXPERIENCE", value: "5+ YRS" },
-]
-
 function StatBlock({ label, value, index }: { label: string; value: string; index: number }) {
   return (
     <motion.div
@@ -77,7 +70,19 @@ function StatBlock({ label, value, index }: { label: string; value: string; inde
 }
 
 /* ── main certificates section ── */
-export function CertificatesSection() {
+interface CertificatesSectionProps {
+  certificates: Certificate[]
+  projectCount: number
+}
+
+export function CertificatesSection({ certificates, projectCount }: CertificatesSectionProps) {
+  const stats = [
+    { label: "PROJECTS_COMPLETED", value: String(projectCount) },
+    { label: "CERTIFICATIONS", value: String(certificates.length) },
+    { label: "GITHUB_CONTRIBUTIONS", value: "2400+" },
+    { label: "EXPERIENCE", value: "5+ YRS" },
+  ]
+
   return (
     <section className="w-full px-6 py-20 lg:px-12">
       {/* Section label */}
@@ -135,7 +140,7 @@ export function CertificatesSection() {
           transition={{ delay: 0.4, duration: 0.5, ease }}
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8 pt-8 border-t-2 border-foreground"
         >
-          {STATS.map((stat, i) => (
+          {stats.map((stat, i) => (
             <StatBlock key={stat.label} {...stat} index={i} />
           ))}
         </motion.div>
