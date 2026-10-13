@@ -1,5 +1,4 @@
 import { Metadata } from 'next'
-import { serverFetch } from '@/lib/server-fetch'
 import CertificationsClient from './certifications-client'
 
 export const metadata: Metadata = {
@@ -7,7 +6,6 @@ export const metadata: Metadata = {
   description: 'Professional certifications and credentials earned by Philip Titus in software engineering, cloud platforms, machine learning and DevOps.',
 }
 
-export default async function CertificationsPage() {
-  const initialData = await serverFetch('/api/certificates/')
-  return <CertificationsClient initialData={initialData} />
+export default function CertificationsPage() {
+  return <CertificationsClient />
 }
