@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Job } from "@/data/mock-data"
+import { Job } from "@/store/types"
 import { ExternalLink, Briefcase } from "lucide-react"
 
 const ease = [0.22, 1, 0.36, 1] as const

@@ -7,19 +7,30 @@ import { Calendar, User, MessageCircle } from "lucide-react"
 import { useChat } from "@/contexts/chat-context"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { fetchBlogDetail } from "@/store/actions"
+import type { BlogDetail as BlogDetailType } from "@/store/types"
 
 interface BlogDetailProps {
   slug: string
+  /** Pre-fetched article data (e.g. from a server-rendered page). When
+   * provided, skips the redux fetch entirely — used by the standalone
+   * /blog/[slug] page so it renders immediately from server-fetched data
+   * instead of double-fetching client-side. The SlideOver usage never
+   * passes this, so its existing fetch-by-slug behavior is unchanged. */
+  article?: BlogDetailType
 }
 
-export function BlogDetail({ slug }: BlogDetailProps) {
+export function BlogDetail({ slug, article: preloadedArticle }: BlogDetailProps) {
   const { openChat } = useChat()
   const dispatch = useAppDispatch()
-  const { blogDetail: article, detailLoading: loading, error } = useAppSelector(state => state.blog)
+  const { blogDetail: fetchedArticle, detailLoading: fetchedLoading, error: fetchedError } = useAppSelector(state => state.blog)
+  const article = preloadedArticle ?? fetchedArticle
+  const loading = preloadedArticle ? false : fetchedLoading
+  const error = preloadedArticle ? null : fetchedError
 
   useEffect(() => {
+    if (preloadedArticle) return
     dispatch(fetchBlogDetail(slug) as any)
-  }, [slug, dispatch])
+  }, [slug, dispatch, preloadedArticle])
 
   const formattedDate = article?.timestamp
     ? new Date(article.timestamp).toLocaleDateString("en-US", {

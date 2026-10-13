@@ -3,15 +3,16 @@
 import { TerminalCard } from "@/components/bento/terminal-card"
 import { PortfolioShowcase } from "@/components/portfolio-showcase"
 import { motion } from "framer-motion"
-import { portfolioProjects } from "@/data/mock-data"
+import { Portfolio } from "@/store/types"
 
 const ease = [0.22, 1, 0.36, 1] as const
 
 interface FeatureGridProps {
-  onPortfolioClick?: (project: any) => void
+  projects: Portfolio[]
+  onPortfolioClick?: (project: Portfolio) => void
 }
 
-export function FeatureGrid({ onPortfolioClick }: FeatureGridProps) {
+export function FeatureGrid({ projects, onPortfolioClick }: FeatureGridProps) {
   return (
     <section className="w-full px-6 py-20 lg:px-12">
       {/* Section label */}
@@ -37,7 +38,7 @@ export function FeatureGrid({ onPortfolioClick }: FeatureGridProps) {
         transition={{ duration: 0.6, ease }}
         className="mb-12"
       >
-        <PortfolioShowcase projects={portfolioProjects} onProjectClick={onPortfolioClick} />
+        <PortfolioShowcase projects={projects} onProjectClick={onPortfolioClick} />
       </motion.div>
 
       {/* Interactive Section with Terminal Chat */}
