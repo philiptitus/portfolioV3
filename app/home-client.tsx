@@ -1,41 +1,24 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { HeroSection } from "@/components/hero-section"
 import { FeatureGrid } from "@/components/feature-grid"
-import { AboutSection } from "@/components/about-section"
 import { CertificatesSection } from "@/components/certificates-section"
 import { BlogsSection } from "@/components/blogs-section"
 import { ExperienceSection } from "@/components/experience-section"
 import { GlitchMarquee } from "@/components/glitch-marquee"
 import { Footer } from "@/components/footer"
 import { SlideOver } from "@/components/slide-over"
-import { SkeletonCard } from "@/components/skeleton-loader"
 import { ExperienceDetail } from "@/components/details/experience-detail"
 import { PortfolioDetail } from "@/components/details/portfolio-detail"
 import { BlogDetail } from "@/components/details/blog-detail"
-import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import { fetchDashboard } from "@/store/actions"
-import { Blog, DashboardData, Job, Portfolio, Skill } from "@/store/types"
+import { Blog, DashboardData, Job, Portfolio } from "@/store/types"
 
-export default function HomeClient({ initialData }: { initialData?: DashboardData | null }) {
-  const dispatch = useAppDispatch()
-  const { data: dashboardData, loading, error } = useAppSelector(state => state.dashboard)
-  const homeData = dashboardData || initialData
-
+export default function HomeClient({ initialData }: { initialData: DashboardData }) {
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null)
   const [selectedProjectSlug, setSelectedProjectSlug] = useState<string | null>(null)
   const [selectedBlogSlug, setSelectedBlogSlug] = useState<string | null>(null)
-
-  // Fetch dashboard data on component mount
-  useEffect(() => {
-    if (initialData) {
-      dispatch({ type: 'FETCH_DASHBOARD_SUCCESS', payload: initialData })
-    } else {
-      dispatch(fetchDashboard() as any)
-    }
-  }, [])
 
   const handleOpenJobDetail = (job: Job) => {
     setSelectedJobId(job.id)
@@ -55,60 +38,22 @@ export default function HomeClient({ initialData }: { initialData?: DashboardDat
     setSelectedBlogSlug(null)
   }
 
-  // Show loading skeleton if dashboard is loading
-  if (loading || (!homeData && !error)) {
-    return (
-      <div className="min-h-screen dot-grid-bg">
-        <Navbar />
-        <main className="space-y-20 py-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  // Show error message if there's an error
-  if (error) {
-    return (
-      <div className="min-h-screen dot-grid-bg">
-        <Navbar />
-        <main className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2">Unable to Load Content</h2>
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <button
-              onClick={() => dispatch(fetchDashboard() as any)}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-            >
-              Try Again
-            </button>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen dot-grid-bg">
       <Navbar />
       <main>
         <HeroSection />
         <FeatureGrid
-          projects={homeData?.portfolio || []}
+          projects={initialData.portfolio}
           onPortfolioClick={handleOpenProjectDetail}
         />
         <CertificatesSection
-          certificates={homeData?.certificates || []}
-          projectCount={homeData?.portfolio.length || 0}
+          certificates={initialData.certificates}
+          projectCount={initialData.portfolio.length}
         />
-        <ExperienceSection jobs={homeData?.jobs || []} onJobClick={handleOpenJobDetail} />
-        <GlitchMarquee skills={homeData?.skills.filter((skill: Skill) => skill.is_key_skill) || []} />
-        <BlogsSection blogs={homeData?.blogs || []} onBlogClick={handleOpenBlogDetail} />
+        <ExperienceSection jobs={initialData.jobs} onJobClick={handleOpenJobDetail} />
+        <GlitchMarquee skills={initialData.skills.filter(skill => skill.is_key_skill)} />
+        <BlogsSection blogs={initialData.blogs} onBlogClick={handleOpenBlogDetail} />
       </main>
       <Footer />
 
