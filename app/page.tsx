@@ -1,7 +1,7 @@
 import { serverFetchDashboard } from '@/lib/server-fetch'
 import HomeClient from './home-client'
 
-export const revalidate = 3600
+export const revalidate = 0
 
 export default async function HomePage() {
   const initialData = await serverFetchDashboard()

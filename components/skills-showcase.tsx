@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Skill } from "@/data/mock-data"
+import { Skill } from "@/store/types"
 
 const ease = [0.22, 1, 0.36, 1]
 
@@ -12,6 +12,9 @@ interface SkillsShowcaseProps {
 export function SkillsShowcase({ skills }: SkillsShowcaseProps) {
   // Filter key skills
   const keySkills = skills.filter((s) => s.is_key_skill).slice(0, 8)
+  const averageScore = skills.length
+    ? Math.round(skills.reduce((a, b) => a + b.score, 0) / skills.length)
+    : 0
 
   return (
     <div className="space-y-6">
@@ -76,7 +79,7 @@ export function SkillsShowcase({ skills }: SkillsShowcaseProps) {
               Avg Score
             </p>
             <p className="text-lg font-mono font-bold text-foreground">
-              {Math.round(skills.reduce((a, b) => a + b.score, 0) / skills.length)}%
+              {averageScore}%
             </p>
           </div>
         </div>

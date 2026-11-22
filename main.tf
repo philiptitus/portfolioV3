@@ -9,8 +9,9 @@
 locals {
   app_name = "portfolio-frontend"
 
-  frontend_service_name = var.environment == "prod" ? "portfolio-frontend" : "portfolio-frontend-dev"
-  frontend_sa_account_id = "portfolio-frontend-sa-${var.environment}"
+  frontend_service_name   = var.environment == "prod" ? "portfolio-frontend" : "portfolio-frontend-dev"
+  frontend_sa_account_id  = "portfolio-frontend-sa-${var.environment}"
+  dashboard_cache_seconds = var.environment == "prod" ? 86400 : 300
 
   # Custom domains only exist for the live prod service today.
   manage_domains = var.environment == "prod"
@@ -58,6 +59,10 @@ resource "google_cloud_run_v2_service" "frontend" {
       env {
         name  = "BACKEND_URL"
         value = var.backend_url
+      }
+      env {
+        name  = "DASHBOARD_CACHE_SECONDS"
+        value = tostring(local.dashboard_cache_seconds)
       }
     }
   }
