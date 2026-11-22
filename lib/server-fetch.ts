@@ -1,41 +1,34 @@
-import { awards, blogs, certificates, jobs, keySkills, portfolioProjects } from '@/data/mock-data'
 import type { DashboardData } from '@/store/types'
 
 const BACKEND_URL = process.env.BACKEND_URL!;
+const DASHBOARD_CACHE_SECONDS = Number(process.env.DASHBOARD_CACHE_SECONDS ?? '300')
 
-const STATIC_DASHBOARD_FALLBACK: DashboardData = {
-  skills: keySkills,
-  certificates,
-  blogs,
-  portfolio: portfolioProjects,
-  awards,
-  jobs,
+const EMPTY_DASHBOARD: DashboardData = {
+  skills: [],
+  certificates: [],
+  blogs: [],
+  portfolio: [],
+  awards: [],
+  jobs: [],
 }
 
-let lastSuccessfulDashboardData = STATIC_DASHBOARD_FALLBACK
-
 export async function serverFetchDashboard(): Promise<DashboardData> {
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
-    return STATIC_DASHBOARD_FALLBACK
-  }
-
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 8000)
 
   try {
     const res = await fetch(`${BACKEND_URL}/api/dashboard/`, {
       signal: controller.signal,
-      next: { revalidate: 3600 },
+      next: { revalidate: DASHBOARD_CACHE_SECONDS },
     })
     if (!res.ok) {
       throw new Error(`Dashboard request failed with status ${res.status}`)
     }
 
-    lastSuccessfulDashboardData = await res.json() as DashboardData
-    return lastSuccessfulDashboardData
+    return await res.json() as DashboardData
   } catch (error) {
-    console.error('Dashboard request failed; serving the last available dashboard data.', error)
-    return lastSuccessfulDashboardData
+    console.error('Dashboard request failed; serving an empty dashboard response.', error)
+    return EMPTY_DASHBOARD
   } finally {
     clearTimeout(timeout)
   }
@@ -44,7 +37,7 @@ export async function serverFetchDashboard(): Promise<DashboardData> {
 export async function serverFetch(endpoint: string) {
   try {
     const res = await fetch(`${BACKEND_URL}${endpoint}`, {
-      next: { revalidate: 3600 }
+      cache: 'no-store'
     })
     if (!res.ok) return null
     return res.json()
